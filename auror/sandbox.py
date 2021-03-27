@@ -1,10 +1,13 @@
 import atexit
+import logging
 import subprocess
 import time
 from threading import Lock
 
 _executor_name = f'auror-sandbox-{time.time()}'
 _sandbox_startup_lock = Lock()
+
+_logger = logging.getLogger(__name__)
 
 
 def execute(bash_script: str):
@@ -15,9 +18,12 @@ def execute(bash_script: str):
         if not _is_executor_running():
             _start_executor()
 
-    output = subprocess.check_output(['docker', 'exec', _executor_name,
-                                      'bash', '-c', bash_script], universal_newlines=True)
-    return output.rstrip()
+    try:
+        output = subprocess.check_output(['docker', 'exec', _executor_name,
+                                          'bash', '-c', bash_script], universal_newlines=True)
+        return output.rstrip()
+    except subprocess.CalledProcessError as e:
+        _logger.error(e)
 
 
 def _is_executor_running():
