@@ -31,7 +31,7 @@ def set_value(pkgbuild_content: str, key: Union[PkgBuildKey, str], value: object
 
 @cache
 def sources(pkgbuild_content: str) -> list[str]:
-    return eval_value(pkgbuild_content, PkgBuildKey.source).split(' ')
+    return [x.split("::", maxsplit=1)[-1] for x in eval_value(pkgbuild_content, PkgBuildKey.source).split(' ')]
 
 
 @cache
