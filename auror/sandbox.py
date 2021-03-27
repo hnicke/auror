@@ -30,8 +30,8 @@ def _is_executor_running():
 
 def _start_executor():
     atexit.register(_stop_executor)
-    subprocess.check_output(['docker', 'run', '-it', '-d', '--rm', f'--name={_executor_name}', 'bash'])
+    subprocess.check_output(['docker', 'run', '-it', '-d', '--rm', f'--name={_executor_name}', 'whynothugo/makepkg'])
 
 
 def _stop_executor():
-    subprocess.call(['docker', 'kill', _executor_name])
+    subprocess.run(['docker', 'kill', _executor_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
