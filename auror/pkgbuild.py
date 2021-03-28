@@ -1,8 +1,6 @@
 import re
-import subprocess
 from enum import Enum
 from functools import cache
-from tempfile import NamedTemporaryFile
 from typing import Union
 
 import requests
@@ -63,16 +61,11 @@ def current_version(pkgbuild_content: str) -> Version:
 @cache
 def update(pkgbuild_content: str, target_version: Version) -> str:
     pkgbuild_content_updated = set_value(pkgbuild_content, PkgBuildKey.pkgver, target_version)
-    tmp_file = NamedTemporaryFile()
-    tmp_file.write(pkgbuild_content_updated.encode())
-    tmp_file.flush()
-    subprocess.check_call(['updpkgsums', tmp_file.name])
-    tmp_file.seek(0)
-    pkgbuild_content_updated = tmp_file.read().decode('utf-8')
-    tmp_file.readlines()
-
+    pkgbuild_content_updated = sandbox.execute('updpkgsums > /dev/null && cat PKGBUILD',
+                                               mounts={'PKGBUILD': pkgbuild_content_updated}) + '\n'
     return pkgbuild_content_updated
 
 
+@cache
 def source_info(pkgbuild_content: str) -> str:
     return sandbox.execute(f"makepkg --printsrcinfo", mounts={'PKGBUILD': pkgbuild_content}) + '\n'
