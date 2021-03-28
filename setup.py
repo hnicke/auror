@@ -2,8 +2,8 @@ from setuptools import setup
 
 setup(
     name='auror',
-    version='0.1',
-    py_modules=['auror'],
+    version='0.0.2',
+    packages=['auror'],
     install_requires=[
         'click',
         'pytest',
