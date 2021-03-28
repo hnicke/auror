@@ -18,7 +18,10 @@ class PkgBuildKey(Enum):
 
 def eval_value(pkgbuild_content: str, key: PkgBuildKey) -> str:
     """Source PKGBUILD in an isolated docker container and print value of given key"""
-    return sandbox.execute(f"CARCH=x86_64 source <(cat <<'EOF'\n{pkgbuild_content}\nEOF\n) && echo \"${key.value}\"")
+    value = sandbox.execute(f"source PKGBUILD && echo \"${key.value}\"",
+                            env=dict(CARCH='x86_64'), mounts={'PKGBUILD': pkgbuild_content})
+    assert value is not None
+    return value
 
 
 def set_value(pkgbuild_content: str, key: Union[PkgBuildKey, str], value: object) -> str:
@@ -72,6 +75,4 @@ def update(pkgbuild_content: str, target_version: Version) -> str:
 
 
 def source_info(pkgbuild_content: str) -> str:
-    return sandbox.execute(
-        f"cd $(mktemp -d) && cat <<'EOF' > PKGBUILD\n{pkgbuild_content}\nEOF\nmakepkg --printsrcinfo") + '\n'
-
+    return sandbox.execute(f"makepkg --printsrcinfo", mounts={'PKGBUILD': pkgbuild_content}) + '\n'
